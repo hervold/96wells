@@ -10,30 +10,51 @@ app = Flask(__name__)
 def hello():
     return "Hello World!"
 
-@app.route('/view/<model_name>/<int:pk>')
-def show_post(model_name, pk):
+def get_obj( model_name, pk ):
     config = get_test_config()
     initdb(config['DB']['engine'])
-
-    import n6wells.db
-
     conn = get_handle()
-
-    from n6wells.db import Sample, SampleType
-    st = SampleType(name='test')
-    s = Sample(name='foo', sample_type=st)
 
     try:
         model = n6wells.db.__getattribute__(model_name)
     except AttributeError as e:
-        return 'bad model', 404, None
+        return None, None
 
     try:
         obj = model.uniq_pk(pk)
     except NoResultFound:
+        return model, None
+
+    return model, obj
+
+
+@app.route('/view/<model_name>/<int:pk>')
+def get_dict(model_name, pk):
+
+    model, obj = get_obj( model_name, pk )
+
+    if model is None:
+        return 'bad model', 404, None
+
+    if obj is None:
         return 'bad pk', 404, None
 
     return json.dumps(obj.to_dict())
+
+
+@app.route('/measure/<model_name>/<int:pk>')
+def measure(model_name, pk):
+    from n6wells.measure import Measurement
+
+    model, obj = get_obj( model_name, pk )
+
+    if model is None:
+        return 'bad model', 404, None
+
+    if obj is None:
+        return 'bad pk', 404, None
+
+    return json.dumps( Measurement.calc( model, obj ) )
 
 
 if __name__ == "__main__":

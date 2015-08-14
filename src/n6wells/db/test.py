@@ -18,6 +18,8 @@ class DbTest(unittest.TestCase):
         print( 'before:', conn.query(Sample).all() )
 
         typ = SampleType(name='TestType')
+        print( 'during:', typ)
+
         s = Sample(sample_type=typ)
         conn.add(s)
         conn.commit()

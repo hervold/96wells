@@ -2,15 +2,14 @@ print('@@ db.__init__')
 from sqlalchemy import Column, ForeignKey, Table, \
     UniqueConstraint, PrimaryKeyConstraint, distinct, and_, or_, types, \
     Integer, BigInteger, String, Float, Boolean, DateTime, Time, Enum, \
-    create_engine, MetaData
+    create_engine, MetaData, \
+    func as sql_func
 
 from sqlalchemy.orm import sessionmaker, scoped_session, backref, foreign, \
         reconstructor, synonym, relationship
 
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.ext.declarative import declarative_base, api
-#from sqlalchemy.ext.declarative.api import DeclarativeMeta
-#from .api_override import declarative_base, DeclarativeMeta
 import importlib
 import pkgutil
 
@@ -44,7 +43,7 @@ __all__ = ['BaseModel','Column', 'ForeignKey', 'Table',
            'UniqueConstraint', 'PrimaryKeyConstraint', 'distinct', 'and_', 'or_', 'types',
            'Integer','BigInteger','String','Float','Boolean','DateTime','Time',
            'ENGINE_NAME','initdb','get_handle','backref','foreign','reconstructor',
-           'synonym','relationship']
+           'synonym','relationship','sql_func']
 
 
 # subclass of declarative base class with helper methods
@@ -152,11 +151,14 @@ def initdb( _ENGINE_NAME ) :
     global Session
     global ENGINE_NAME
 
-    ENGINE_NAME = _ENGINE_NAME
-    engine = create_engine(ENGINE_NAME, echo=False, pool_recycle=300)
-    Session = sessionmaker(bind=engine)
+    if ENGINE_NAME is None:
+        # we only want to do this once
 
-    register_tables(engine)
+        ENGINE_NAME = _ENGINE_NAME
+        engine = create_engine(ENGINE_NAME, echo=False, pool_recycle=300)
+        Session = sessionmaker(bind=engine)
+
+        register_tables(engine)
 
 
 def get_handle():
