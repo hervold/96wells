@@ -1,0 +1,3 @@
+Plate	Well	Sample
+p1	A1	s1
+p1	A7	s7
