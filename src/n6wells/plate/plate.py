@@ -24,10 +24,8 @@ class Plate(BaseModel):
         row = str(row)
         col = str(col)
         nd = {col: sample}
-        print nd
         ndf = DataFrame(data=nd, index=[str(row)])
         self.positions.update(ndf)
-        print self.positions
 
     def free_wells(self):
         pass
