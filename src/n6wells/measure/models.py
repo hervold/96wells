@@ -3,7 +3,6 @@ from n6wells.db import *
 from n6wells.db.models import Link
 from n6wells.db.constants import Meas_Action_Enum
 from n6wells.xaction import Xaction
-#from n6wells.db import Xaction
 
 
 class Measurement(BaseModel):

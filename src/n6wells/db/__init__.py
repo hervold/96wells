@@ -26,16 +26,13 @@ class DeclarativeMeta(type):
     the metaclass from which ORM model classes are derived
     """
     def __init__(cls, classname, bases, dict_):
-        if '_decl_class_registry' not in cls.__dict__:
-            api._as_declarative(cls, classname, cls.__dict__)
-        type.__init__(cls, classname, bases, dict_)
+        if '__tablename__' not in dict_ or dict_['__tablename__'] not in cls.metadata.tables:
+            if '_decl_class_registry' not in cls.__dict__:
+                api._as_declarative(cls, classname, cls.__dict__)
+            type.__init__(cls, classname, bases, dict_)
 
     def __setattr__(cls, key, value):
-        # this is the first attribute set:
-        if key == '_sa_declared_attr_reg' and cls.__tablename__ in cls.metadata.tables:
-            cls.metadata._remove_table(cls.__tablename__, cls.metadata.schema)
         api._add_attribute(cls, key, value)
-
 
 Base = declarative_base(metaclass=DeclarativeMeta)
 
@@ -132,11 +129,12 @@ def register_tables( engine  ):
 
     Base.metadata.create_all(bind=engine)
 
+    '''
     for tablename, cls in tables.items():
         print('@@ tablename:', tablename)
         globals()[tablename] = cls
         __all__.append( tablename )
-
+    '''
 
 def initdb( _ENGINE_NAME ) :
     """

@@ -4,7 +4,7 @@ from n6wells.db import *
 from n6wells.util.test import get_test_config
 
 
-class DbTest(unittest.TestCase):
+class MeasTest(unittest.TestCase):
     def setUp(self):
         config = get_test_config()
         initdb(config['DB']['engine'])
@@ -12,8 +12,10 @@ class DbTest(unittest.TestCase):
 
     def test_meas(self):
         print('@@ running meaurement test!!!')
-
-        from n6wells.db import Sample, SampleType, Measurement, Xaction
+        from n6wells.sample import Sample, SampleType
+        #from n6wells.db import Sample, SampleType, Measurement
+        from . import Measurement
+        from n6wells.xaction import Xaction
 
         st = SampleType(name='test_meas')
         s = Sample(sample_type = st)

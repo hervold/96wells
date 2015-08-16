@@ -12,7 +12,7 @@ class DbTest(unittest.TestCase):
 
 
     def test_db(self):
-        from n6wells.db import Sample, SampleType
+        from n6wells.sample import Sample, SampleType
 
         conn = get_handle()
         print( 'before:', conn.query(Sample).all() )
