@@ -1,5 +1,5 @@
 import n6wells
-from plate import Plate
+from n6wells.plate import Plate
 import csv
 import argparse
 

@@ -1,5 +1,6 @@
 from n6wells import *
 from n6wells.db import *
+from n6wells.plate.plate import Plate
 
 class Well(BaseModel):
     __tablename__ = 'well'
