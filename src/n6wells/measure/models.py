@@ -9,8 +9,8 @@ class Measurement(BaseModel):
     __tablename__ = 'sample_meas'
     pk = Column( Integer, primary_key=True, nullable=False )
     action = Column( Meas_Action_Enum, nullable=False )
-    xaction_id = Column( Integer, ForeignKey(Xaction.pk), nullable=False )
-    link_target_id = Column( Integer, ForeignKey(Link.pk), nullable=False )
+    xaction_pk = Column( Integer, ForeignKey(Xaction.pk), nullable=False )
+    link_target_pk = Column( Integer, ForeignKey(Link.pk), nullable=False )
     created = Column(DateTime, default=sql_func.now(), nullable=False )
 
     xaction = relationship('Xaction')
@@ -20,7 +20,7 @@ class Measurement(BaseModel):
     def calc(cls, model, obj):
         conn = get_handle()
         print('@@ desc:', sql_func.desc)
-        latest_xaction = conn.query(cls.xaction_id) \
+        latest_xaction = conn.query(cls.xaction_pk) \
                            .filter( cls.link_target == obj.link ) \
                            .order_by( cls.created.desc() ) \
                            .first()
