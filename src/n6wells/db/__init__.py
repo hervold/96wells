@@ -1,12 +1,15 @@
 print('@@ db.__init__')
 from sqlalchemy import Column, ForeignKey, Table, \
     UniqueConstraint, PrimaryKeyConstraint, distinct, and_, or_, types, \
-    Integer, BigInteger, String, Float, Boolean, DateTime, Time, Enum, \
+    Integer, BigInteger, String, Float, Boolean, DateTime, Time, Enum, Text, \
     create_engine, MetaData, \
     func as sql_func
 
 from sqlalchemy.orm import sessionmaker, scoped_session, backref, foreign, \
         reconstructor, synonym, relationship
+
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+
 
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.ext.declarative import declarative_base, api
@@ -38,8 +41,9 @@ Base = declarative_base(metaclass=DeclarativeMeta)
 
 __all__ = ['BaseModel','Column', 'ForeignKey', 'Table',
            'UniqueConstraint', 'PrimaryKeyConstraint', 'distinct', 'and_', 'or_', 'types',
-           'Integer','BigInteger','String','Float','Boolean','DateTime','Time',
+           'Integer','BigInteger','String','Float','Boolean','DateTime','Time','Text',
            'ENGINE_NAME','initdb','get_handle','backref','foreign','reconstructor',
+           'NoResultFound','MultipleResultsFound',
            'synonym','relationship','sql_func']
 
 
@@ -60,6 +64,8 @@ class BaseModel(Base):
         def uniq_name(cls, name):
             """
             """
+            conn = get_handle()
+            return conn.query(cls).filter(cls.name == name).one()
 
         def to_dict(self):
                 """
