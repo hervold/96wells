@@ -9,8 +9,6 @@ from sqlalchemy.orm import sessionmaker, scoped_session, backref, foreign, \
         reconstructor, synonym, relationship
 
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
-
-
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.ext.declarative import declarative_base, api
 import importlib

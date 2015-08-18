@@ -1,5 +1,6 @@
 import unittest
 from n6wells.db import *
+from n6wells.util.test import get_test_config
 from n6wells.container import fixtures, Container, ContainerTyp
 
 
