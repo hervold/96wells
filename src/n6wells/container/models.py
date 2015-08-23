@@ -23,7 +23,7 @@ class Container(BaseModel):
     type_id = Column( Integer, ForeignKey(ContainerType.pk), nullable=False )
     markup = Column( Text, nullable=True )  # for storage of client properties
 
-    typ = relationship(ContainerType, backref='units')
+    type = relationship(ContainerType, backref='units')
 
     __table_args__ = (
         UniqueConstraint('order','type_id'),
@@ -42,4 +42,4 @@ class ContainerInst(BaseModel):
     created = Column(DateTime, default=sql_func.now(), nullable=False )
 
     link = relationship(Link)
-    typ = relationship(ContainerType)
+    type = relationship(ContainerType)

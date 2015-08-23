@@ -15,6 +15,6 @@ def load():
             row = chr(_row)
             for col in range(12):
                 wellname = '%s%02d' % (row,col+1)
-                conn.add( Container( typ=typ, order=ct, name=wellname ) )
+                conn.add( Container( type=typ, order=ct, name=wellname ) )
                 ct += 1
         conn.commit()
