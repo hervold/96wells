@@ -2,7 +2,7 @@ from n6wells import *
 from n6wells.db import *
 from n6wells.db.models import Link
 from n6wells.xaction import Xaction
-from n6wells.container import ContainerTyp, Container, ContainerInst
+from n6wells.container import ContainerType, Container, ContainerInst
 
 
 
@@ -31,7 +31,7 @@ class Sample(BaseModel):
 
 
 class Plating(BaseModel):
-    __tablename__ = 'plate'
+    __tablename__ = 'plating'
     pk = Column( Integer, primary_key=True, nullable=False)
     plate_pk = Column( Integer, ForeignKey(ContainerInst.pk), nullable=False )
     well_pk = Column( Integer, ForeignKey(Container.pk), nullable=False )

@@ -1,15 +1,15 @@
 from n6wells.db import *
-from n6wells.container.models import ContainerTyp, Container
+from n6wells.container.models import ContainerType, Container
 
 
 def load():
     try:
-        typ = ContainerTyp.uniq_name('')
+        typ = ContainerType.uniq_name('')
     except NoResultFound:
         # load fixtures
         conn = get_handle()
 
-        typ = ContainerTyp(name='Plate-96_well')
+        typ = ContainerType(name='Plate-96_well')
         ct = 0
         for _row in range(ord('A'),ord('H')+1):
             row = chr(_row)

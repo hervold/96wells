@@ -2,7 +2,7 @@ from n6wells.db import *
 from n6wells.db.models import Link
 
 
-class ContainerTyp(BaseModel):
+class ContainerType(BaseModel):
     """
     used to group "slots" into one container, eg, wells into a plate
     """
@@ -20,13 +20,13 @@ class Container(BaseModel):
     pk = Column( Integer, primary_key=True, nullable=False)
     name = Column( String(128), nullable=False, unique=True )
     order = Column( Integer, nullable=False )
-    typ_id = Column( Integer, ForeignKey(ContainerTyp.pk), nullable=False )
+    type_id = Column( Integer, ForeignKey(ContainerType.pk), nullable=False )
     markup = Column( Text, nullable=True )  # for storage of client properties
 
-    typ = relationship(ContainerTyp, backref='units')
+    typ = relationship(ContainerType, backref='units')
 
     __table_args__ = (
-        UniqueConstraint('order','typ_id'),
+        UniqueConstraint('order','type_id'),
     )
 
 
@@ -37,9 +37,9 @@ class ContainerInst(BaseModel):
     __tablename__ = 'container_instance'
     pk = Column( Integer, primary_key=True, nullable=False)
     name = Column( String(128), nullable=True, unique=True )
-    typ_id = Column( Integer, ForeignKey(ContainerTyp.pk), nullable=False )
+    type_id = Column( Integer, ForeignKey(ContainerType.pk), nullable=False )
     link_id = Column( Integer, ForeignKey(Link.pk), nullable=False )
     created = Column(DateTime, default=sql_func.now(), nullable=False )
 
     link = relationship(Link)
-    typ = relationship(ContainerTyp)
+    typ = relationship(ContainerType)

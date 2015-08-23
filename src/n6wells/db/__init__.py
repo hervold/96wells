@@ -106,8 +106,13 @@ def walk_mods( basepath, seen=None, tables=None ):
         for attr_name in dir(mod):
             attr = mod.__getattribute__(attr_name)
             if isinstance(attr, DeclarativeMeta):
-                tables[attr_name] = attr
 
+                print('@@ walk_mods - setting', attr_name)
+                tables[attr_name] = attr
+                try:
+                    print('@@ found table:', attr.__tablename__)
+                except AttributeError:
+                    pass
         if ispkg:
             walk_mods( mod.__path__, seen=seen, tables=tables )
 
@@ -125,17 +130,26 @@ def register_tables( engine  ):
     """
     #tables = walk_mods('n6wells')
     tables = walk_mods( importlib.__import__('n6wells').__path__ )
-
+    print('@@ finialed walk_modes; len(tables):', len(tables))
     for tname, t in Base.metadata.tables.items():
         for fk in t.foreign_keys:
             fk.use_alter=True
             fk.constraint.use_alter=True
 
-    Base.metadata.create_all(bind=engine)
+    print('@@ register_tables: about to call create_all') 
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print('@@ caught!!', e)
+        raise
+    print('@@ register_tables: 2')
 
-    '''
     for tablename, cls in tables.items():
         print('@@ tablename:', tablename)
+
+    print('@@ register_tables: 3')
+
+    '''
         globals()[tablename] = cls
         __all__.append( tablename )
     '''

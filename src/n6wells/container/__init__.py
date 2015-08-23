@@ -1,2 +1,2 @@
-from .models import ContainerTyp, Container, ContainerInst
+from .models import ContainerType, Container, ContainerInst
 

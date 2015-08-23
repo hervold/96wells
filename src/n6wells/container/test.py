@@ -1,10 +1,10 @@
 import unittest
 from n6wells.db import *
 from n6wells.util.test import get_test_config
-from n6wells.container import fixtures, Container, ContainerTyp
+from n6wells.container import fixtures, Container, ContainerType
 
 
-class ContainerTest(unittest.TestCase):
+class ContainerTest():#unittest.TestCase):
     def setUp(self):
         config = get_test_config()
         initdb(config['DB']['engine'])
