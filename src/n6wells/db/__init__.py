@@ -81,35 +81,38 @@ class BaseModel(Base):
                                         d[attr_name] = attr
                 return d
 
-def walk_mods( basepath, seen=None, tables=None ):
+def walk_mods( basepath ):
     """
-    recursively walk module tree in order to visit every ORM object
+    recursively walk module tree in order to visit every ORM object, while
+    enforcing one class per table name restriction
 
-    similar to pkgutil.walk_packages, but I memoize based on filename
-    in order to avoid re-importing, which can have unpleasant side-effects
-    in SQLAlchemy land (ie, re-importing a declarative model is bad)
+    returns dict mapping class_name -> class
     """
-    if seen is None:
-        seen = set()
-    if tables is None:
-        tables = {}
+    tables, tablename_check = {}, {}
 
-    for importer, modname, ispkg in pkgutil.iter_modules(basepath):
+    for importer, modname, ispkg in pkgutil.walk_packages(basepath):
         mod_loc = importer.find_module(modname)
         fname = mod_loc.get_filename()
-        if fname in seen:
-            continue
-            
-        seen.add( fname )
 
         mod = mod_loc.load_module(modname)
         for attr_name in dir(mod):
             attr = mod.__getattribute__(attr_name)
             if isinstance(attr, DeclarativeMeta):
-                tables[attr_name] = attr
+                try:
+                    tablename = attr.__tablename__
+                except AttributeError:
+                    # DeclarativeMeta base class and abstract base classes don't have
+                    # tablenames
+                    pass
+                else:
+                    tables[attr_name] = attr
 
-        if ispkg:
-            walk_mods( mod.__path__, seen=seen, tables=tables )
+                    if tablename in tablename_check:
+                        assert tablename_check[tablename] == attr_name, \
+                            'table name %s associated with multiple classes (%s and %s)' \
+                            % (tablename, tablename_check[tablename], attr_name)
+                    else:
+                       tablename_check[tablename] = attr_name
 
     return tables
 
