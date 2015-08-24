@@ -8,6 +8,8 @@ from sqlalchemy import Column, ForeignKey, Table, \
 from sqlalchemy.orm import sessionmaker, scoped_session, backref, foreign, \
         reconstructor, synonym, relationship
 
+from sqlalchemy.orm.collections import InstrumentedList
+
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.ext.declarative import declarative_base, api
@@ -65,20 +67,40 @@ class BaseModel(Base):
             conn = get_handle()
             return conn.query(cls).filter(cls.name == name).one()
 
-        def to_dict(self):
+        def to_dict(self, seen=None):
                 """
                 generic implementation of function returning JSON-friendly
                 dictionary representing object
                 """
-                d = {}
+                if seen is None:
+                    seen = set([self])
+                elif self in seen:
+                    return {'pk': self.pk,
+                            '__class__': self.__class__.__name__}
+                d = {'__class__': self.__class__.__name__}
                 for attr_name in dir(self.__class__):
                         class_attr = self.__class__.__dict__.get(attr_name)
                         if isinstance( class_attr, InstrumentedAttribute ):
                                 attr = self.__getattribute__(attr_name)
+                                seen.add(attr)
+
+                                l = []
                                 try:
-                                        d[attr_name] = attr.to_dict()
-                                except AttributeError:
+                                    if isinstance(attr,str):
+                                        raise TypeError()
+                                    for x in attr:
+                                        try:
+                                            l.append( x.to_dict(seen=seen) )
+                                        except AttributeError:
+                                            l.append( x )
+                                except TypeError:
+                                    try:
+                                        d[attr_name] = attr.to_dict( seen=seen )
+                                    except AttributeError:
                                         d[attr_name] = attr
+                                else:
+                                    d[attr_name] = l
+
                 return d
 
 def walk_mods( basepath ):

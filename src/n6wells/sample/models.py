@@ -33,12 +33,14 @@ class Sample(BaseModel):
 class Plating(BaseModel):
     __tablename__ = 'plating'
     pk = Column( Integer, primary_key=True, nullable=False)
-    plate_pk = Column( Integer, ForeignKey(ContainerInst.pk), nullable=False )
+    container_inst_pk = Column( Integer, ForeignKey(ContainerInst.pk), nullable=False )
     well_pk = Column( Integer, ForeignKey(Container.pk), nullable=False )
     sample_pk = Column( Integer, ForeignKey(Sample.pk), nullable=False )
     xaction_id = Column( Integer, ForeignKey(Xaction.pk), nullable=False )
 
-    plate = relationship(ContainerInst)
+    container_inst = relationship(ContainerInst)
+    plate = synonym('container_inst')
     well = relationship(Container)
     sample = relationship(Sample)
-    xaction = relationship('Xaction')
+    xaction = relationship(Xaction)
+

@@ -43,3 +43,20 @@ class ContainerInst(BaseModel):
 
     link = relationship(Link)
     type = relationship(ContainerType)
+
+    def __init__(self, *args, **kwargs):
+        kwargs['link'] = Link()
+        super(ContainerInst,self).__init__(*args, **kwargs)
+
+    def to_dict(self, seen=None, AssocClass=None):
+        d = super(ContainerInst,self).to_dict(seen=seen)
+
+        if AssocClass is not None:
+            conn = get_handle()
+            d['contents'] = []
+
+            for pair in conn.query(AssocClass) \
+                .filter( AssocClass.container_inst == self ):
+                d['contents'].append( pair.to_dict(seen=seen) )
+
+        return d
