@@ -156,6 +156,11 @@ def register_tables( engine  ):
 
     Base.metadata.create_all(bind=engine)
 
+    for tablename, cls in tables.items():
+        print('@@ tablename=%s, cls=%s' % (tablename, cls))
+        globals()[tablename] = cls
+        __all__.append( tablename )
+
 
 def initdb( _ENGINE_NAME ) :
     """
