@@ -42,9 +42,10 @@ Base = declarative_base(metaclass=DeclarativeMeta)
 __all__ = ['BaseModel','Column', 'ForeignKey', 'Table',
            'UniqueConstraint', 'PrimaryKeyConstraint', 'distinct', 'and_', 'or_', 'types',
            'Integer','BigInteger','String','Float','Boolean','DateTime','Time','Text',
-           'ENGINE_NAME','initdb','get_handle','backref','foreign','reconstructor',
+           'ENGINE_NAME','initdb','destroydb','backref','foreign','reconstructor',
            'NoResultFound','MultipleResultsFound',
-           'synonym','relationship','sql_func']
+           'synonym','relationship','sql_func',
+           'DB','committer','querier']
 
 
 # subclass of declarative base class with helper methods
@@ -111,7 +112,7 @@ def walk_mods( basepath ):
     returns dict mapping class_name -> class
     """
     tables, tablename_check = {}, {}
-
+    print('@@ walk_mods')
     for importer, modname, ispkg in pkgutil.walk_packages(basepath):
         mod_loc = importer.find_module(modname)
         fname = mod_loc.get_filename()
@@ -136,6 +137,7 @@ def walk_mods( basepath ):
                     else:
                        tablename_check[tablename] = attr_name
 
+    print('@@ tables:', tables)
     return tables
 
 
@@ -162,6 +164,20 @@ def register_tables( engine  ):
         __all__.append( tablename )
 
 
+def destroydb(_ENGINE_NAME):
+    global ENGINE_NAME
+    global Session
+
+    assert ENGINE_NAME is None
+    assert Session is None
+
+    assert 'test' in _ENGINE_NAME
+
+    engine = create_engine(_ENGINE_NAME, echo=False, pool_recycle=300)
+    tables = walk_mods( importlib.__import__('n6wells').__path__ )
+    Base.metadata.drop_all(bind=engine)
+
+
 def initdb( _ENGINE_NAME ) :
     """
     initialize database:
@@ -180,10 +196,59 @@ def initdb( _ENGINE_NAME ) :
 
         ENGINE_NAME = _ENGINE_NAME
         engine = create_engine(ENGINE_NAME, echo=False, pool_recycle=300)
-        Session = sessionmaker(bind=engine)
 
+        Session = sessionmaker(bind=engine)
         register_tables(engine)
 
 
-def get_handle():
-    return Session()
+class _DB:
+    """
+    wrap session object to enable lshift syntax
+    """
+    session = None
+    read_only = True
+    #__metaclass__ = MetaDB
+
+    def __init__(self, session, read_only=True ):
+        self.session = session
+        self.read_only = read_only
+
+    '''
+    # FIXME: I'd much rather put the << syntax here
+    @staticmethod
+    def __lshift__():
+        return db.commit()
+    '''
+
+    def __getattr__(self, k):
+        if self.read_only and k != 'query':
+            raise AttributeError('session in read-only mode does not support '+k)
+        return self.session.__getattribute__(k)
+
+
+def get_handle( read_only=True ):
+     return _DB( Session(), read_only=read_only )
+
+# FIXME: for the solution to this in Python2, see:
+#   http://stackoverflow.com/questions/3301220/staticmethod-or-classmethod-decoration-on-magic-methods
+# however, that doesn't seem to work in python3
+class DB_typ:
+    def __lshift__(self, db):
+        db.commit()
+DB = DB_typ()
+
+
+def committer(f):
+    def g(*args, **kwargs):
+        db = get_handle(read_only=False)
+        l = [db] + list(args)
+        x = f( *l, **kwargs)
+        return db
+    return g
+
+
+def querier(f):
+    def g(*args, **kwargs):
+        l = [get_handle(read_only=True)] + list(args)
+        return f( *l, **kwargs)
+    return g
